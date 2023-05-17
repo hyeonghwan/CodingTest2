@@ -12,135 +12,277 @@
 //2 1
 //1
 //1
+//4
+//2 4 8 2
+//2 0 8 0
+//2 0 2 2
+//4 4 0 0
 import Foundation
-// 행 렬 스티커 개수
-//5 4 4
-//3 3
-//1 0 1
-//1 1 1
-//1 0 1
-//2 5
-//1 1 1 1 1
-//0 0 0 1 0
-//2 3
-//1 1 1
-//1 0 1
-//3 3
-//1 0 0
-//1 1 1
-//1 0 0
-//(lldb) po board.forEach{ print($0)}
 
-var arr1:[Int] = readLine()!.split(separator: " ").map{ Int(String($0))! }
-let row: Int = arr1[0]
-let col: Int = arr1[1]
 
-var board: [[Int]] = Array(repeating: [], count: row)
-board = board.map { _ in
-    Array(repeating: 0, count: col)
-}
-
-let s_count: Int = arr1[2]
-
-var stickers: [[[Int]]] = []
-
-for _ in 0..<s_count{
-    let s = readLine()!.split(separator: " ").map{ Int(String($0))! }
-    var sticker: [[Int]] = []
-    for _ in 0..<s[0]{
-        let cols = readLine()!.split(separator: " ").map{ Int(String($0))!}
-        sticker.append(cols)
+var n_count: Int = 0
+var g_board: [[Int]] = []
+var inputBoard: () -> () = {
+    let value = readLine()!.map{ Int(String($0))! }
+    n_count = value.first!
+    var board: [[Int]] = []
+    for _ in 0..<n_count{
+        board.append( readLine()!.split(separator: " ").map{ Int(String($0))!} )
     }
-    stickers.append(sticker)
+    g_board = board
 }
 
-// rotate -> 0,1,2,3 ->0,90,180,270
-func stk(stk_index: Int, rotate: Int){
-    if stk_index == stickers.count {
+func boj_2048(){
+    inputBoard()
+    //위, 아래, 좌, 우
+    recursive(0, g_board)
+}
+var maxBlock: Int = -1000
+func recursive(_ index: Int,_ board: [[Int]]){
+    if index == 5{
+        board.forEach({
+            print($0)
+        })
+        maxBlock = findMaxValue(maxBlock,board)
         return
     }
+    let dir: [Int] = [0,1,2,3]
     
-    var _sticker = stickers[stk_index]
-    
-    switch rotate{
+    for d in dir{
+        let d_board = combine(d, board: board)
+        if d_board == board {
+            maxBlock = findMaxValue(maxBlock,d_board)
+            continue
+        }
+        return recursive(index + 1, d_board)
+    }
+}
+
+func findMaxValue(_ max: Int,_ board: [[Int]]) -> Int {
+    var value: Int = max
+    for i in 0..<board.count{
+        for j in 0..<board.first!.count{
+            value = value < board[i][j] ? board[i][j] : value
+        }
+    }
+    return value
+}
+func convertOriginal(_ rowORcol: Bool,_ board: [[Int]]) -> [[Int]]{
+    var newOne: [[Int]] = []
+    var a: Int = board.first!.count
+    var b: Int = board.count
+    if rowORcol{
+        a = board.count
+        b = board.first!.count
+    }
+    for j in 0..<a{
+        var one: [Int] = []
+        for i in 0..<b{
+            one.append(board[i][j])
+        }
+        newOne.append(one)
+    }
+    return newOne
+}
+
+func combine(_ dir: Int, board: [[Int]]) -> [[Int]]{
+    switch dir{
     case 0:
-        break
+        //상
+        print(board.forEach({print($0)}))
+        print("\n")
+        var rows = rowArray(board: board).map{ combineRecursive(left: true ,$0, 0,0)}
+        print(rows.forEach({print($0)}))
+        return convertOriginal(false,rows)
     case 1:
-        _sticker = rotateCheck(insert: _sticker)
+        //하
+        var rows = rowArray(board: board).map{ combineRecursive(left: false ,$0, 0,0)}
+        return convertOriginal(false,rows)
     case 2:
-        _sticker = rotateTwice(insert: _sticker)
+        //좌
+        return colArray(board: board).map{ combineRecursive(left: true ,$0, 0,0)}
     case 3:
-        _sticker = rotateThird(insert: _sticker)
+        //우
+        return colArray(board: board).map{ combineRecursive(left: false ,$0, 0,0)}
     default:
-        return stk(stk_index: stk_index + 1, rotate: 0)
+        print("error")
     }
-    
-    for r in 0..<board.count{
-        for c in 0..<board.first!.count{
-            if board[r][c] == 1, _sticker[0][0] == 1{
-                continue
-            }
-            if firstCheck(insert: _sticker, to: (r,c), on: &board){
-                return stk(stk_index: stk_index + 1,rotate: 0)
-            }
-        }
-    }
-    stk(stk_index: stk_index, rotate: rotate + 1)
-}
-    
-
-func rotateThird(insert sticker: [[Int]]) -> [[Int]]{
-    return rotateCheck(insert: rotateTwice(insert: sticker))
-}
-func rotateTwice(insert sticker: [[Int]]) -> [[Int]]{
-    return rotateCheck(insert: rotateCheck(insert: sticker))
+    return []
 }
 
-func rotateCheck(insert sticker: [[Int]]) -> [[Int]]{
-    // 열 -> 행
-    // 행 -> 열
-    var newSticker: [[Int]] = Array(repeating: Array(repeating: 0, count: sticker.count), count: sticker.first!.count)
-    for i in 0..<sticker.count{
-        for j in 0..<sticker.first!.count{
-            if sticker[i][j] == 1{
-                newSticker[j][abs(i - (sticker.count - 1))] = 1
-            }
-        }
+
+func combineRecursive(left: Bool,_ arr:[Int],_ index: Int = 0,_ idx: Int) -> [Int] {
+    
+    if arr.count == 1 || (index + 1) >= arr.count {
+        return arr
     }
-    return newSticker
+    var arr = arr
+    
+    if arr[index] == 0 {
+        return combineRecursive(left: left, arr, index + 1, idx )
+    }
+    if arr[idx] == 0{
+        arr[idx] = arr[index]
+    }
+    if arr[index] == arr[index + 1]{
+        arr[idx] = 2 * arr[index]
+        arr[index + 1] = 0
+        return combineRecursive(left: left, arr, index + 2, idx + 1)
+    }else{
+        arr[idx]
+        return combineRecursive(left: left, arr, index + 1, idx)
+    }
 }
 
-func firstCheck(insert sticker: [[Int]],to index: (Int,Int), on board: inout [[Int]]) -> Bool{
-    let (r,c) = index
-    let validRow = r + sticker.count
-    let validCol = c + sticker.first!.count
-    let before = board
-    if validRow > board.count || validCol > board.first!.count{
-        return false
-    }
-    
-    for i in r..<validRow{
-        for j in c..<validCol{
-            if sticker[i-r][j-c] == 1{
-                if board[i][j] == 1{
-                    board = before
-                    return false
-                }else{
-                    board[i][j] = 1
-                }
-            }
+func colArray(board: [[Int]]) -> [[Int]]{
+    var colArray: [[Int]] = []
+    let col = board.first!.count
+    let row = board.count
+    for r in 0..<row{
+        var colItem: [Int] = []
+        for c in 0..<col{
+            colItem.append(board[r][c])
         }
+        colArray.append(colItem)
     }
-    return true
+    return colArray
 }
-stk(stk_index: 0, rotate: 0)
-print(board.reduce(0, { result , d in
-    var result = result
-    for i in d{
-        result += i
+
+func rowArray(board: [[Int]]) -> [[Int]]{
+    var rowArray: [[Int]] = []
+    let col = board.first!.count
+    let row = board.count
+    for c in 0..<col{
+        var rowItem: [Int] = []
+        for r in 0..<row{
+            rowItem.append(board[r][c])
+        }
+        rowArray.append(rowItem)
     }
-    return result
-}))
+    return rowArray
+}
+//boj_2048()
+print("\(maxBlock)")
+print(combine(0, board: [[0,2,4],[2,2,2],[4,4,8]]))
+
+
+
+
+//var arr1:[Int] = readLine()!.split(separator: " ").map{ Int(String($0))! }
+//let row: Int = arr1[0]
+//let col: Int = arr1[1]
+//
+//var board: [[Int]] = Array(repeating: [], count: row)
+//board = board.map { _ in
+//    Array(repeating: 0, count: col)
+//}
+//
+//let s_count: Int = arr1[2]
+//
+//var stickers: [[[Int]]] = []
+//
+//for _ in 0..<s_count{
+//    let s = readLine()!.split(separator: " ").map{ Int(String($0))! }
+//    var sticker: [[Int]] = []
+//    for _ in 0..<s[0]{
+//        let cols = readLine()!.split(separator: " ").map{ Int(String($0))!}
+//        sticker.append(cols)
+//    }
+//    stickers.append(sticker)
+//}
+//
+//// rotate -> 0,1,2,3 ->0,90,180,270
+//func stk(stk_index: Int, rotate: Int){
+//    if stk_index == stickers.count {
+//        return
+//    }
+//
+//    var _sticker = stickers[stk_index]
+//
+//    switch rotate{
+//    case 0:
+//        break
+//    case 1:
+//        _sticker = rotateCheck(insert: _sticker)
+//    case 2:
+//        _sticker = rotateTwice(insert: _sticker)
+//    case 3:
+//        _sticker = rotateThird(insert: _sticker)
+//    default:
+//        return stk(stk_index: stk_index + 1, rotate: 0)
+//    }
+//
+//    for r in 0..<board.count{
+//        for c in 0..<board.first!.count{
+//            if board[r][c] == 1, _sticker[0][0] == 1{
+//                continue
+//            }
+//            if firstCheck(insert: _sticker, to: (r,c), on: &board){
+//                return stk(stk_index: stk_index + 1,rotate: 0)
+//            }
+//        }
+//    }
+//    stk(stk_index: stk_index, rotate: rotate + 1)
+//}
+//
+//
+//func rotateThird(insert sticker: [[Int]]) -> [[Int]]{
+//    return rotateCheck(insert: rotateTwice(insert: sticker))
+//}
+//func rotateTwice(insert sticker: [[Int]]) -> [[Int]]{
+//    return rotateCheck(insert: rotateCheck(insert: sticker))
+//}
+//
+//func rotateCheck(insert sticker: [[Int]]) -> [[Int]]{
+//    // 열 -> 행
+//    // 행 -> 열
+//    var newSticker: [[Int]] = Array(repeating: Array(repeating: 0, count: sticker.count), count: sticker.first!.count)
+//    for i in 0..<sticker.count{
+//        for j in 0..<sticker.first!.count{
+//            if sticker[i][j] == 1{
+//                newSticker[j][abs(i - (sticker.count - 1))] = 1
+//            }
+//        }
+//    }
+//    return newSticker
+//}
+//
+//func firstCheck(insert sticker: [[Int]],to index: (Int,Int), on board: inout [[Int]]) -> Bool{
+//    let (r,c) = index
+//    let validRow = r + sticker.count
+//    let validCol = c + sticker.first!.count
+//    let before = board
+//    if validRow > board.count || validCol > board.first!.count{
+//        return false
+//    }
+//
+//    for i in r..<validRow{
+//        for j in c..<validCol{
+//            if sticker[i-r][j-c] == 1{
+//                if board[i][j] == 1{
+//                    board = before
+//                    return false
+//                }else{
+//                    board[i][j] = 1
+//                }
+//            }
+//        }
+//    }
+//    return true
+//}
+
+//출력 함수
+//stk(stk_index: 0, rotate: 0)
+//print(board.reduce(0, { result , d in
+//    var result = result
+//    for i in d{
+//        result += i
+//    }
+//    return result
+//}))
+
+
+
 //board = Array(repeating: Array(repeating: 0, count: 4), count: 5)
 //var stci = [[1,0,1],[1,1,1],[1,0,1]]
 //var stci2 = [[0,1],[0,1],[0,1],[1,1],[0,1]]
