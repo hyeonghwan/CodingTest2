@@ -22,51 +22,115 @@ import Foundation
 
 var n_count: Int = 0
 var g_board: [[Int]] = []
+var removeChikenHouse: Int = 0
 var inputBoard: () -> () = {
-    let value = readLine()!.map{ Int(String($0))! }
+    let value = readLine()!.split(separator: " ").map{ Int(String($0))! }
     n_count = value.first!
-    var board: [[Int]] = []
-    for _ in 0..<n_count{
-        board.append( readLine()!.split(separator: " ").map{ Int(String($0))!} )
-    }
-    g_board = board
+    removeChikenHouse = value.last!
 }
 
-func boj_2048(){
+func boj_15686(){
     inputBoard()
-    //위, 아래, 좌, 우
-    recursive(0, g_board)
+    var board: [[Int]] = []
+    
+    var houses: [(Int,Int)] = []
+    var chickenHouses: [(Int,Int)] = []
+    var combination: [[(Int,Int)]] = []
+    
+    for _ in 0..<n_count{
+        let line = readLine()!.split(separator: " ").map{ Int(String($0))!}
+        board.append(line)
+    }
+    
+    for i in 0..<board.count{
+        for j in 0..<board.first!.count{
+            if board[i][j] == 1{
+                houses.append((i + 1, j + 1))
+            }else if board[i][j] == 2{
+                chickenHouses.append((i + 1, j + 1))
+            }
+        }
+    }
+    
+    func selectChickenHouse(_ house_ch: [(Int,Int)],select: Int){
+        if select == chickenHouses.count{
+            if house_ch.count == removeChikenHouse{
+                combination.append(house_ch)
+            }
+            return
+        }
+        selectChickenHouse(house_ch , select: select + 1)
+        selectChickenHouse(house_ch + [chickenHouses[select]], select: select + 1)
+    }
+    
+    selectChickenHouse([],select: 0)
+    
+    let value = combination
+        .map{ coordinator in chickenDistance(chikenHouses: coordinator, houses: houses)}
+        .map{ v in v.reduce(0, +) }
+        .min()
+    
+    if let value{
+        print(value)
+    }
 }
+
+
+func chickenDistance(chikenHouses: [(Int,Int)], houses:[(Int,Int)]) -> [Int]{
+    // 0 -> 빈칸 , 1 -> 집 , 2-> 치킨집
+    var distances: [Int] = Array(repeating: 500, count: houses.count)
+    
+    for i in 0..<chikenHouses.count{
+        let (r2,c2) = chikenHouses[i]
+        for j in 0..<houses.count{
+            let (r1,c1) = houses[j]
+            let d = abs(r1 - r2) + abs(c1 - c2)
+            if distances[j] > d{
+                distances[j] = d
+            }
+        }
+    }
+    return distances
+}
+boj_15686()
+
 var maxBlock: Int = -1000
+func boj_2048(){
+    //위, 아래, 좌, 우
+    inputBoard()
+    var board: [[Int]] = []
+    for _ in 0..<n_count{
+        let line = readLine()!.split(separator: " ").map{ Int(String($0))!}
+        board.append(line)
+    }
+    g_board = board
+    
+    if n_count == 1{
+        print(board.first!.first!)
+        return
+    }
+    recursive(0, g_board)
+    print("\(maxBlock)")
+}
+
 func recursive(_ index: Int,_ board: [[Int]]){
+    
     if index == 5{
-        board.forEach({
-            print($0)
-        })
-        maxBlock = findMaxValue(maxBlock,board)
+        for i in 0..<board.count{
+            for j in 0..<board.first!.count{
+                maxBlock = maxBlock < board[i][j] ? board[i][j] : maxBlock
+            }
+        }
         return
     }
     let dir: [Int] = [0,1,2,3]
     
     for d in dir{
         let d_board = combine(d, board: board)
-        if d_board == board {
-            maxBlock = findMaxValue(maxBlock,d_board)
-            continue
-        }
-        return recursive(index + 1, d_board)
+        recursive(index + 1, d_board)
     }
 }
 
-func findMaxValue(_ max: Int,_ board: [[Int]]) -> Int {
-    var value: Int = max
-    for i in 0..<board.count{
-        for j in 0..<board.first!.count{
-            value = value < board[i][j] ? board[i][j] : value
-        }
-    }
-    return value
-}
 func convertOriginal(_ rowORcol: Bool,_ board: [[Int]]) -> [[Int]]{
     var newOne: [[Int]] = []
     var a: Int = board.first!.count
@@ -89,14 +153,11 @@ func combine(_ dir: Int, board: [[Int]]) -> [[Int]]{
     switch dir{
     case 0:
         //상
-        print(board.forEach({print($0)}))
-        print("\n")
-        var rows = rowArray(board: board).map{ combineRecursive(left: true ,$0, 0,0)}
-        print(rows.forEach({print($0)}))
+        let rows = rowArray(board: board).map{ combineRecursive(left: true ,$0, 0,0)}
         return convertOriginal(false,rows)
     case 1:
         //하
-        var rows = rowArray(board: board).map{ combineRecursive(left: false ,$0, 0,0)}
+        let rows = rowArray(board: board).map{ combineRecursive(left: false ,$0, 0,0)}
         return convertOriginal(false,rows)
     case 2:
         //좌
@@ -111,27 +172,46 @@ func combine(_ dir: Int, board: [[Int]]) -> [[Int]]{
 }
 
 
-func combineRecursive(left: Bool,_ arr:[Int],_ index: Int = 0,_ idx: Int) -> [Int] {
-    
-    if arr.count == 1 || (index + 1) >= arr.count {
-        return arr
-    }
+func combineRecursive(left: Bool,_ arr:[Int],_ index: Int = 0,_ idx: Int = 0) -> [Int] {
+    var tmp = Array(repeating: 0, count: arr.count)
     var arr = arr
+    var idx = idx
+    var index = index
     
-    if arr[index] == 0 {
-        return combineRecursive(left: left, arr, index + 1, idx )
+    if left == false{
+        arr = arr.reversed()
     }
-    if arr[idx] == 0{
-        arr[idx] = arr[index]
+    
+    while true{
+        if (idx == arr.count - 1) || index == arr.count{
+            break
+        }
+        if arr[index] == 0{
+            index += 1
+            continue
+        }
+        
+        if tmp[idx] == 0 {
+            tmp[idx] = arr[index]
+            index += 1
+            continue
+        }
+        if tmp[idx] == arr[index]{
+            tmp[idx] = arr[index] * 2
+            tmp[index] = 0
+            idx += 1
+            index += 1
+        }else{
+            tmp[idx + 1] = arr[index]
+            idx += 1
+            index += 1
+        }
     }
-    if arr[index] == arr[index + 1]{
-        arr[idx] = 2 * arr[index]
-        arr[index + 1] = 0
-        return combineRecursive(left: left, arr, index + 2, idx + 1)
-    }else{
-        arr[idx]
-        return combineRecursive(left: left, arr, index + 1, idx)
+    
+    if left == false{
+        return tmp.reversed()
     }
+    return tmp
 }
 
 func colArray(board: [[Int]]) -> [[Int]]{
@@ -162,10 +242,44 @@ func rowArray(board: [[Int]]) -> [[Int]]{
     return rowArray
 }
 //boj_2048()
-print("\(maxBlock)")
-print(combine(0, board: [[0,2,4],[2,2,2],[4,4,8]]))
+//10
+//8 8 4 16 32 0 0 8 8 8
+//8 8 4 0 0 8 0 0 0 0
+//16 0 0 16 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 16
+//0 0 0 0 0 0 0 0 0 2
+//inputBoard()
+//var board: [[Int]] = []
+//for _ in 0..<n_count{
+//    let line = readLine()!.split(separator: " ").map{ Int(String($0))!}
+//    board.append(line)
+//}
+//let t1 = combine(0, board: board)
+//let t2 = combine(3, board: t1)
+//let t3 = combine(0, board: t2)
+//let t4 = combine(3, board: t3)
+//let t5 = combine(0, board: t4)
+//let t6 = combine(2, board: t5)
+//let t7 = combine(2, board: t6)
+//t6.forEach{print("\($0)")}
+//위,오른,위,오,위,왼,왼
 
-
+//10
+//16 16 8 32 32 0 0 8 8 8
+//16 0 0 0 0 8 0 0 0 16
+//0 0 0 0 0 0 0 0 0 2
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
+//0 0 0 0 0 0 0 0 0 0
 
 
 //var arr1:[Int] = readLine()!.split(separator: " ").map{ Int(String($0))! }
