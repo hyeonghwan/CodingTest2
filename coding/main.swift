@@ -19,6 +19,161 @@
 //4 4 0 0
 import Foundation
 
+func solution(_ game_board:[[Int]], _ table:[[Int]]) -> Int {
+    let (size_g,g_board) = bfs(game_board, flag: false)
+    let (size_t,t_board) = bfs(table, flag: true)
+    let gameArr = getBaseTable(g_board)
+    let puzzleArr = getBaseTable(t_board)
+    
+    var g_count: [[[Int]]?] = gameArr
+    var visit: [Bool] = Array(repeating: false, count: puzzleArr.count)
+    var cnt: Int = 0
+    for i in 0..<gameArr.count{
+        let ga_board = gameArr[i]
+        let g_size = size_g[i]
+        
+    puzzle: for j in 0..<puzzleArr.count{
+            if visit[j] == true{
+                continue puzzle
+            }
+            if g_size == size_t[j] {
+                if ga_board == puzzleArr[j]{
+                    cnt += g_size
+                    visit[j] = true
+                    break puzzle
+                }
+                for k in 1..<3{
+                    if ga_board == rotateCase(k,puzzleArr[j]){
+                        cnt += g_size
+                        visit[j] = true
+                        break puzzle
+                    }
+                }
+            }
+        }
+    }
+    return cnt
+}
+
+
+
+func rotateCase(_ r: Int, _ board: [[Int]]) -> [[Int]]{
+    switch r{
+    case 1:
+        return rotate(board)
+    case 2:
+        return rotate(rotate(board))
+    case 3:
+        return rotate(rotate(rotate(board)))
+    default:
+        return board
+    }
+}
+
+func rotate(_ board: [[Int]]) -> [[Int]]{
+    var n_board: [[Int]] = Array(repeating: Array(repeating: 0, count: board.count), count: board.first!.count)
+    for r in 0..<board.count{
+        for c in 0..<board.first!.count{
+            if board[r][c] == 1{
+                n_board[c][abs(r - (board.count - 1))] = 1
+            }
+        }
+    }
+    return n_board
+}
+
+
+func getBaseTable(_ board: [[(Int,Int)]]) -> [[[Int]]]{
+    let board = board
+    var result: [[[Int]]] = []
+    for i in 0..<board.count{
+        let t = board[i]
+        let _r = t.max(by: { ($0.0 ) < ($1.0)})!.0
+        let _c = t.max(by: { ($0.1) < ($1.1)})!.1
+        var base: [[Int]] = Array(repeating: Array(repeating: 0, count: _c + 1), count: _r + 1)
+        for j in 0..<board[i].count{
+            let (x,y) = board[i][j]
+            base[x][y] = 1
+        }
+        result.append(base)
+    }
+    return result
+}
+
+func bfs(_ board: [[Int]], flag: Bool) -> ([Int],[[(Int,Int)]]){
+    var queue: [(Int,Int)] = []
+    var visit: [[Bool]] = Array(repeating: Array(repeating: false, count: board.first!.count), count: board.count)
+    
+    var sizeArr: [Int] = []
+    
+    var square: Int = 0
+    if flag{
+        square = 1
+    }
+    // 하 우 상 좌
+    let dx: [Int] = [1,0,-1,0]
+    let dy: [Int] = [0,1,0,-1]
+    var x_y: [[(Int,Int)]] = []
+    
+    for r in 0..<board.count{
+        for c in 0..<board.first!.count{
+            var size: Int = 0
+            var xy: [(Int,Int)] = []
+            
+            if board[r][c] == square && visit[r][c] == false{
+                queue.append((r,c))
+                visit[r][c] = true
+                size += 1
+                xy.append((r,c))
+            }else{
+                continue
+            }
+            
+            while !queue.isEmpty{
+                let (x,y) = queue.removeFirst()
+                
+                for dir in 0..<4{
+                    let nx = x + dx[dir]
+                    let ny = y + dy[dir]
+                    
+                    
+                    if nx < 0 || nx >= board.count || ny < 0 || ny >= board.first!.count{
+                        continue
+                    }
+                    
+                    if board[nx][ny] == square && visit[nx][ny] == false{
+                        visit[nx][ny] = true
+                        queue.append((nx,ny))
+                        xy.append((nx ,ny))
+                        size += 1
+                    }
+                }
+            }
+            
+            xy = xy.map{ (x,y) in return ((x - r),(y - c))}
+            
+            let mix_y = xy.min(by: { $0.1 < $1.1})
+            let t: [(Int,Int)] = xy.map{ arr in
+                var a = arr
+                a.1 += Int(abs(mix_y!.1))
+                return a
+            }
+            
+            
+            x_y.append(t)
+            
+            sizeArr.append(size)
+        }
+    }
+    return (sizeArr,x_y)
+}
+
+
+let t = solution([[1,1,0,0,1,0],[0,0,1,0,1,0],[0,1,1,0,0,1],[1,1,0,1,1,1],[1,0,0,0,1,0],[0,1,1,1,0,0]]
+                 ,[[1,0,0,1,1,0],[1,0,1,0,1,0],[0,1,1,0,1,1],[0,0,1,0,0,0],[1,1,0,1,1,0],[0,1,0,0,0,0]])
+print(t)
+
+
 
 var n_count: Int = 0
 var g_board: [[Int]] = []
@@ -92,7 +247,7 @@ func chickenDistance(chikenHouses: [(Int,Int)], houses:[(Int,Int)]) -> [Int]{
     }
     return distances
 }
-boj_15686()
+//boj_15686()
 
 var maxBlock: Int = -1000
 func boj_2048(){
@@ -488,9 +643,9 @@ func queen(row: Int, N: Int){
 }
 
 func insert_queen_on_board(c: Int, left: Int, right: Int){
-       issued_col[c] = false
-       issued_left[left] = false
-       issued_right[right] = false
+    issued_col[c] = false
+    issued_left[left] = false
+    issued_right[right] = false
 }
 
 func out_queen_on_board(c: Int, left: Int, right: Int){
@@ -604,24 +759,24 @@ func zetfunc(N: Int, r: Int, c: Int) -> Int{
 
 
 final class Queue<T> {
-  private var inArr: [T] = []
-  private var outArr: [T] = []
-
-  var isEmpty: Bool {
-    inArr.isEmpty && outArr.isEmpty
-  }
-
-  func enqueue(_ element: T) {
-    inArr.append(element)
-  }
-
-  func dequeue() -> T? {
-    if outArr.isEmpty {
-      outArr = inArr.reversed()
-      inArr.removeAll(keepingCapacity: true)
+    private var inArr: [T] = []
+    private var outArr: [T] = []
+    
+    var isEmpty: Bool {
+        inArr.isEmpty && outArr.isEmpty
     }
-    return outArr.popLast()
-  }
+    
+    func enqueue(_ element: T) {
+        inArr.append(element)
+    }
+    
+    func dequeue() -> T? {
+        if outArr.isEmpty {
+            outArr = inArr.reversed()
+            inArr.removeAll(keepingCapacity: true)
+        }
+        return outArr.popLast()
+    }
 }
 
 var board2: [[Character]] = []
