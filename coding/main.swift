@@ -19,6 +19,130 @@
 //4 4 0 0
 import Foundation
 
+//5 3
+//5 4 3 2 1
+//1 3
+//2 4
+//5 5
+
+func sumRange(){
+    let num = readLine()!.split(separator: " ").map{Int(String($0))!}
+    
+    let arr = readLine()!.split(separator: " ").map{Int(String($0))!}
+    
+    var range: [(Int,Int)] = []
+    for _ in 0..<num.last! {
+        let line = readLine()!.split(separator: " ").map{Int(String($0))!}
+        range.append((line.first!,line.last!))
+    }
+    
+    var d: [Int] = Array(repeating: 0, count: 100000)
+    d[0] = arr[0]
+    d[1] = d[0] + arr[1]
+    d[2] = d[1] + arr[2]
+    
+    for index in 3..<arr.count{
+        d[index] = d[index - 1] + arr[index]
+    }
+    for (s,e) in range{
+        var result: Int = 0
+        
+        if s == 1{
+            result = d[e - 1]
+        }else{
+            result = d[e - 1] - d[s - 2]
+        }
+        print(result)
+    }
+}
+sumRange()
+
+func tile(){
+    let num = Int(String(readLine()!))!
+    
+    var d: [Int] = Array(repeating: 0, count: 10007)
+    d[0] = 0
+    d[1] = 1
+    d[2] = 2
+    
+    if num <= 2{
+        print(d[num])
+        return
+    }
+    
+    for i in 3..<num + 1{
+        d[i] = (d[i - 1] + d[i - 2]) % 10007
+        
+    }
+    print(d[num])
+}
+//tile()
+
+func rgbpath(){
+//3
+//26 40 83
+//49 60 57
+//13 89 99
+    let num = Int(String(readLine()!))!
+    var rgbArr: [[Int]] = []
+    
+    for _ in 0..<num{
+        let v = readLine()!.split(separator: " ").map{ Int(String($0))!}
+        rgbArr.append(v)
+    }
+    
+    var dp: [[Int]] = Array(repeating: Array(repeating: 0, count: 3), count: rgbArr.count)
+    
+    dp[0][0] = rgbArr[0][0]
+    dp[0][1] = rgbArr[0][1]
+    dp[0][2] = rgbArr[0][2]
+    
+    for i in 1..<rgbArr.count{
+        dp[i][0] = min(dp[i-1][1], dp[i-1][2]) + rgbArr[i][0]
+        dp[i][1] = min(dp[i-1][0], dp[i-1][2]) + rgbArr[i][1]
+        dp[i][2] = min(dp[i-1][0], dp[i-1][1]) + rgbArr[i][2]
+    }
+    let m = min(dp.last![0], dp.last![1], dp.last![2])
+    print(m)
+}
+//rgbpath()
+
+
+func stairsDP(){
+    let num = Int(String(readLine()!))!
+    let stairCount = num
+    
+    var stairs: [Int] = [0]
+    var dpStairs: [[Int]] = Array(repeating: Array(repeating: 0, count: 3), count: stairCount + 1)
+    for _ in 0..<stairCount{
+        stairs.append(Int(String(readLine()!))!)
+    }
+    
+    if stairCount == 1 {
+        print(stairs[1])
+        return
+    }
+    if stairCount == 0{
+        print(0)
+        return
+    }
+    
+    dpStairs[1][1] = stairs[1]
+    dpStairs[1][2] = 0
+    dpStairs[2][1] = stairs[2]
+    dpStairs[2][2] = stairs[1] + stairs[2]
+    
+    for k in 3..<stairCount + 1{
+        dpStairs[k][1] = max(dpStairs[k - 2][1], dpStairs[k-2][2]) + stairs[k]
+        dpStairs[k][2] = dpStairs[k-1][1] + stairs[k]
+    }
+
+    print(max(dpStairs[stairCount][1], dpStairs[stairCount][2]))
+    
+}
+//stairsDP()
+
+
 func solution(_ game_board:[[Int]], _ table:[[Int]]) -> Int {
     let (size_g,g_board) = bfs(game_board, flag: false)
     let (size_t,t_board) = bfs(table, flag: true)
@@ -169,9 +293,9 @@ func bfs(_ board: [[Int]], flag: Bool) -> ([Int],[[(Int,Int)]]){
 }
 
 
-let t = solution([[1,1,0,0,1,0],[0,0,1,0,1,0],[0,1,1,0,0,1],[1,1,0,1,1,1],[1,0,0,0,1,0],[0,1,1,1,0,0]]
-                 ,[[1,0,0,1,1,0],[1,0,1,0,1,0],[0,1,1,0,1,1],[0,0,1,0,0,0],[1,1,0,1,1,0],[0,1,0,0,0,0]])
-print(t)
+//let t = solution([[1,1,0,0,1,0],[0,0,1,0,1,0],[0,1,1,0,0,1],[1,1,0,1,1,1],[1,0,0,0,1,0],[0,1,1,1,0,0]]
+//                 ,[[1,0,0,1,1,0],[1,0,1,0,1,0],[0,1,1,0,1,1],[0,0,1,0,0,0],[1,1,0,1,1,0],[0,1,0,0,0,0]])
+//print(t)
 
 
 
