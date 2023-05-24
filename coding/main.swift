@@ -4,33 +4,66 @@
 ////
 ////  Created by 박형환 on 2023/05/10.
 ////
-//5 4 2
-//3 3
-//1 0 1
-//1 1 1
-//1 0 1
-//2 1
-//1
-//1
-//4
-//2 4 8 2
-//2 0 8 0
-//2 0 2 2
-//4 4 0 0
 import Foundation
 
-//5 3
-//5 4 3 2 1
-//1 3
-//2 4
-//5 5
+
+//정수 X에 사용할 수 있는 연산은 다음과 같이 세 가지 이다.
+//
+//X가 3으로 나누어 떨어지면, 3으로 나눈다.
+//X가 2로 나누어 떨어지면, 2로 나눈다.
+//1을 뺀다.
+//정수 N이 주어졌을 때, 위와 같은 연산 세 개를 적절히 사용해서 1을 만들려고 한다. 연산을 사용하는 횟수의 최솟값을 출력하시오.
+
+//첫째 줄에 N과 K가 주어진다. (1 ≤ N ≤ 10, 1 ≤ K ≤ 100,000,000)
+//둘째 줄부터 N개의 줄에 동전의 가치 Ai가 오름차순으로 주어진다. (1 ≤ Ai ≤ 1,000,000, A1 = 1, i ≥ 2인 경우에 Ai는 Ai-1의 배수)
+func coinCaluate(){
+    let NUM = readLine()!.split(separator: " ").map{Int(String($0))!}
+    let N = NUM.first!
+    let K = NUM.last!
+    
+    var value: [Int] = []
+    
+    for _ in 0..<N{
+          value.append(Int(String(readLine()!))!)
+    }
+    
+    func BT(_ index: Int, target: Int, result: Int){
+        if target == 0 {
+            print(result)
+            return
+        }
+        
+        for i in stride(from: index - 1, to: -1, by: -1){
+            if value[i] <= target{
+                let moc: Int = target / value[i]
+                let rest: Int = target % value[i]
+                return BT(index - 1, target: rest, result: result + moc)
+            }
+        }
+    }
+    BT(N, target: K, result: 0)
+}
+coinCaluate()
+
+func numberdivisonPath(num: Int){
+    var num = num
+    let max: Int = 1000000
+
+    var dpValue: [Int] = Array(repeating: 0, count: max)
+    var dpPath: [Int] = Array(repeating: 0, count: max)
+    
+    dpValue[2] = 1
+    dpPath[2] = 1
+    dpValue[3] = 1
+    dpPath[3] = 1
+}
 
 func sumRange(){
     let num = readLine()!.split(separator: " ").map{Int(String($0))!}
-    
     let arr = readLine()!.split(separator: " ").map{Int(String($0))!}
     
     var range: [(Int,Int)] = []
+    
     for _ in 0..<num.last! {
         let line = readLine()!.split(separator: " ").map{Int(String($0))!}
         range.append((line.first!,line.last!))
@@ -55,7 +88,8 @@ func sumRange(){
         print(result)
     }
 }
-sumRange()
+
+//sumRange()
 
 func tile(){
     let num = Int(String(readLine()!))!
@@ -76,7 +110,6 @@ func tile(){
     }
     print(d[num])
 }
-//tile()
 
 func rgbpath(){
 //3
@@ -140,7 +173,6 @@ func stairsDP(){
     print(max(dpStairs[stairCount][1], dpStairs[stairCount][2]))
     
 }
-//stairsDP()
 
 
 func solution(_ game_board:[[Int]], _ table:[[Int]]) -> Int {
