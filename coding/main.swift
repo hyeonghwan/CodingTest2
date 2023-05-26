@@ -41,6 +41,7 @@ func coinCaluate(){
             }
         }
     }
+    
     BT(N, target: K, result: 0)
 }
 coinCaluate()
