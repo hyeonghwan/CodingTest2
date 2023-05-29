@@ -3,4 +3,23 @@
    uuid = "45DD623E-B7F5-4C70-81FB-F6E1DEC4D76F"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F3E2362B-393A-4EB1-813A-5B48BE8AE0E2"
+            shouldBeEnabled = "Yes"
+            condition = "diff == 72"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "coding/main.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "136"
+            endingLineNumber = "136"
+            landmarkName = "highway_restPlace_1477()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

@@ -6,6 +6,280 @@
 ////
 import Foundation
 
+//3
+//10 12 3 9
+//10 12 7 2
+//13 11 5 6
+
+//33
+//-1
+//83
+
+//10 , 12 , 3,9
+//10x + 3 = y
+//12x + 9 = y
+//2x - 6 = 0
+//x = (x - y) / (N - M)
+
+// 13, 11, 5, 6
+// 13k + 5 = y
+// 11z + 6 = y
+// 13k - 11z - 1 = 0
+// N*k = M*z + (x - y)
+// N*k - M*z = x - y
+// K + Z ( N - M)
+// KN - ZM -KM + ZN = x - y
+
+func kaingCalendar(){
+    var num = Int(readLine()!)!
+    var result: [Int] = []
+    for _ in 0..<num{
+        let input = readLine()!.split(separator: " ").map{ Int(String($0))! }
+        let M = input[0]
+        let N = input[1]
+        let x = input[2]
+        let y = input[3]
+        let k = solve(M: M, N: N, x: x, y: y)
+        result.append(k)
+    }
+    
+    result.forEach{
+        print($0)
+    }
+}
+kaingCalendar()
+
+func solve(M: Int, N: Int,x: Int, y: Int) -> Int{
+    let l = lcm(a: M, b: N)
+    var c = 0
+    for i in 1..<l + 1{
+        if i % M == x{
+            c = i
+            break
+        }
+    }
+    
+    while c < l + 1{
+        if (c  %  M == x) && (c % N == y){
+            return c
+        }
+        c += M
+    }
+    return -1
+}
+//GCD
+func gcd(a: Int, b: Int) -> Int{
+    if (b == 0) {return a}
+    return gcd(a: b, b: a % b)
+}
+
+func lcm(a: Int,b: Int) -> Int{
+    return (a / gcd(a: a, b: b)) * b
+}
+
+//에라토네스체 소수
+func eratonesCheDecimal(){
+    // O(loot(N))
+    var n: Int = Int(readLine()!)!
+    var i: Int = 2
+    while (i * i <= n){
+        while (n % i == 0){
+            print("div : \(i)")
+            n /= i
+        }
+        i += 1
+    }
+    if (n != 1){ print(n) }
+}
+//eratonesCheDecimal()
+
+
+//다솜이는 유료 고속도로를 가지고 있다. 다솜이는 현재 고속도로에 휴게소를 N개 가지고 있는데, 휴게소의 위치는 고속도로의 시작으로부터 얼만큼 떨어져 있는지로 주어진다. 다솜이는 지금 휴게소를 M개 더 세우려고 한다.
+//
+//다솜이는 이미 휴게소가 있는 곳에 휴게소를 또 세울 수 없고, 고속도로의 끝에도 휴게소를 세울 수 없다. 휴게소는 정수 위치에만 세울 수 있다.
+//
+//다솜이는 이 고속도로를 이용할 때, 모든 휴게소를 방문한다. 다솜이는 휴게소를 M개 더 지어서 휴게소가 없는 구간의 길이의 최댓값을 최소로 하려고 한다. (반드시 M개를 모두 지어야 한다.)
+//
+//예를 들어, 고속도로의 길이가 1000이고, 현재 휴게소가 {200, 701, 800}에 있고, 휴게소를 1개 더 세우려고 한다고 해보자.
+//
+//일단, 지금 이 고속도로를 타고 달릴 때, 휴게소가 없는 구간의 최댓값은 200~701구간인 501이다. 하지만, 새로운 휴게소를 451구간에 짓게 되면, 최대가 251이 되어서 최소가 된다.
+//6 7 800
+//622 411 201 555 755 82
+func highway_restPlace_1477(){
+    let N_M_L: [Int] = readLine()!.split(separator: " ").map{ Int(String($0))! }
+    var location: [Int] = readLine()!.split(separator: " ").map{ Int(String($0))! }
+    location.insert(0, at: 0)
+    location.append(N_M_L.last!)
+    location.sort()
+    print(location)
+    var M = N_M_L[1]
+    
+    while M != 0 {
+        var longPosition: Int = -1
+        var index: Int = 0
+        for i in 0..<(location.count - 1){
+            let diff = (location[i + 1] - location[i])
+            if  diff > longPosition{
+                longPosition = diff
+                index = i
+            }
+        }
+        let value: Int = (location[index] + location[index + 1]) / 2
+        
+        location.insert( value, at: index + 1)
+        M -= 1
+    }
+    var short: Int = -1
+    for i in 0..<(location.count - 1){
+        let diff = (location[i + 1] - location[i])
+        if  diff > short{
+            short = diff
+        }
+    }
+    print(short)
+}
+//highway_restPlace_1477()
+//4 7
+//6 13
+//4 8
+//3 6
+//5 12
+func ordinary_backpack_12865(){
+    let backpack: [Int] = readLine()!.split(separator: " ").map{ Int(String($0))! }
+    
+    let num = backpack.first!
+    let weight = backpack.last!
+    
+    // 0 - weihgt
+    // 1 - value
+    var bArr: [[Int]] = []
+    
+    for _ in 0..<num{
+        let array = readLine()!.split(separator: " ").map{ Int(String($0))! }
+        if array.first! > weight{
+            continue
+        }
+        bArr.append(array)
+    }
+    
+    print(bArr)
+}
+ordinary_backpack_12865()
+
+func boj_2217_rope(){
+    let input = Int(readLine()!)!
+    
+    var ropes: [Int] = []
+    for _ in 0..<input{
+        ropes.append(Int(readLine()!)!)
+    }
+    ropes.sort()
+    
+    var max: Int = -1
+    for i in stride(from: ropes.count - 1, to: -1, by: -1){
+        let count = ropes.count - i
+        let weight = ropes[i] * count
+        if max < weight{
+            max = weight
+        }
+    }
+    print(max)
+}
+//boj_2217_rope()
+
+
+func arrayReplace(){
+    let input = Int(readLine()!)!
+    var aArr: [Int] = readLine()!.split(separator: " ").map{ Int(String($0))! }
+    var bArr: [Int] = readLine()!.split(separator: " ").map{ Int(String($0))! }
+    aArr.sort(by: <)
+    bArr.sort(by: >)
+    var result: Int = 0
+    for i in 0..<aArr.count{
+        result += (aArr[i] * bArr[i])
+    }
+    print(result)
+}
+//arrayReplace()
+// 백준 회의실 배정
+//11
+//1 4
+//3 5
+//0 6
+//5 7
+//3 8
+//5 9
+//6 10
+//8 11
+//8 12
+//2 13
+//12 14
+//print(((100000 * 100000) + (100000 * log(100000.0))))
+func conferenceRoom(){
+    let input = Int(readLine()!)!
+    var nArr: [[Int]] = []
+    for _ in 0..<input{
+        nArr.append(readLine()!.split(separator: " ").map{Int(String($0))!})
+    }
+    
+    nArr
+    =
+    nArr.sorted(by: { one, two in
+        return one.last! != two.last! ? one.last! < two.last! : one.first! < two.first!
+    })
+    
+    var la: Int = -1
+    var result: Int = 0
+    for i in 0..<nArr.count{
+        if nArr[i].first! > la && nArr[i].last! > la{
+            result += 1
+            la = nArr[i].last!
+        }
+    }
+    print(result)
+}
+
+//conferenceRoom()
+
+//3 10
+//1
+//2
+//5
+func boj_coin_one(){
+    let input = readLine()!.split(separator: " ").map{ Int(String($0))! }
+    let n = input.first!
+    let k = input.last!
+    
+    var nArr: [Int] = []
+    
+    for _ in 0..<n{
+        nArr.append(Int(readLine()!)!)
+    }
+    var dp: [Int] = Array(repeating: 0, count: k + 1 )
+    
+    dp[0] = 1
+    
+    var max = 1
+    for i in 0...31{
+        max *= 2
+    }
+    
+    for i in 0..<nArr.count {
+        if nArr[i] >= k + 1{
+            continue
+        }
+        for j in nArr[i]..<k + 1 {
+            if dp[j] + dp[j-nArr[i]] >= max {
+                dp[j] = 0
+            }
+            dp[j] += dp[j - nArr[i]]
+        }
+    }
+    
+    print(dp[k])
+}
+//boj_coin_one()
+
 
 //정수 X에 사용할 수 있는 연산은 다음과 같이 세 가지 이다.
 //
@@ -44,7 +318,7 @@ func coinCaluate(){
     
     BT(N, target: K, result: 0)
 }
-coinCaluate()
+//coinCaluate()
 
 func numberdivisonPath(num: Int){
     var num = num
@@ -52,7 +326,6 @@ func numberdivisonPath(num: Int){
 
     var dpValue: [Int] = Array(repeating: 0, count: max)
     var dpPath: [Int] = Array(repeating: 0, count: max)
-    
     dpValue[2] = 1
     dpPath[2] = 1
     dpValue[3] = 1
