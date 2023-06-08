@@ -3,8 +3,82 @@
 ////  coding
 ////
 ////  Created by 박형환 on 2023/05/10.
-////
+///
 import Foundation
+
+
+print(UnicodeScalar("a").value)
+func solution(_ queue1:[Int], _ queue2:[Int]) -> Int {
+    var queue1: [Int?] = queue1
+    var queue2: [Int?] = queue2
+    var q1_sum = queue1.reduce(into: 0){value,original in value += original!}
+    var q2_sum = queue2.reduce(into: 0){value,original in value += original!}
+    // 600,000
+    let total = q1_sum + q2_sum
+    let value = total % 2
+    if value != 0{
+        return -1
+    }
+    
+    var q1Count = queue1.count
+    var q2Count = queue2.count
+    
+    var index: Int = 0
+    var ptr_1: Int = 0
+    var ptr_2: Int = 0
+    while q1_sum != q2_sum{
+        if ptr_1 > q1Count + 1 || ptr_2 > q2Count + 1{
+            index = -1
+            break
+        }
+        if q1_sum > q2_sum{
+            queue2.append(queue1[ptr_1])
+            q1_sum -= queue1[ptr_1]!
+            q2_sum += queue1[ptr_1]!
+            queue1[ptr_1] = nil
+            ptr_1 += 1
+        }else{
+            queue1.append(queue2[ptr_2])
+            q2_sum -= queue2[ptr_2]!
+            q1_sum += queue2[ptr_2]!
+            queue2[ptr_2] = nil
+            ptr_2 += 1
+        }
+        index += 1
+    }
+    return index
+}
+
+print(solution([3, 3, 3, 3],  [3, 3, 21, 3]))
+//queue1 = [3, 2, 7, 2]
+//queue2 = [4, 6, 5, 1]
+
+
+protocol Talkable {
+    var topic: String { get set }
+    func talk(to: Talkable)
+}
+
+extension Talkable {
+    func talk(to: Talkable) {
+        print("\(to)! \(topic)")
+    }
+}
+
+struct Person: Talkable {
+    var topic: String
+    var name: String
+}
+
+struct Monkey: Talkable {
+    var topic: String
+}
+
+let ned = Person(topic: "Swift", name: "ned")
+let hana = Person(topic: "Internet", name: "hana")
+
+ned.talk(to: hana)
+hana.talk(to: ned)
 
 //3
 //10 12 3 9
@@ -19,6 +93,7 @@ import Foundation
 //10x + 3 = y
 //12x + 9 = y
 //2x - 6 = 0
+
 //x = (x - y) / (N - M)
 
 // 13, 11, 5, 6
@@ -40,6 +115,7 @@ func kaingCalendar(){
         let x = input[2]
         let y = input[3]
         let k = solve(M: M, N: N, x: x, y: y)
+        
         result.append(k)
     }
     
@@ -51,16 +127,15 @@ kaingCalendar()
 
 func solve(M: Int, N: Int,x: Int, y: Int) -> Int{
     let l = lcm(a: M, b: N)
-    var c = 0
-    for i in 1..<l + 1{
-        if i % M == x{
-            c = i
-            break
-        }
-    }
     
+    var x: Int = x
+    var y: Int = y
+    if x == M { x = 0}
+    if y == N { y = 0 }
+    var c = x
     while c < l + 1{
-        if (c  %  M == x) && (c % N == y){
+        if c == 0 { c += M; continue }
+        if (c % N == y){
             return c
         }
         c += M
@@ -69,7 +144,7 @@ func solve(M: Int, N: Int,x: Int, y: Int) -> Int{
 }
 //GCD
 func gcd(a: Int, b: Int) -> Int{
-    if (b == 0) {return a}
+    if (a % b == 0) {return b}
     return gcd(a: b, b: a % b)
 }
 
